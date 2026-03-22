@@ -4,20 +4,19 @@ use std::fs::File;
 use std::io::Read;
 
 /// Verify SHA256 hash of a file
+#[allow(dead_code)]
 pub fn verify_file_hash(file_path: &str, expected_hash: &str) -> Result<bool, AppError> {
-    let mut file = File::open(file_path).map_err(|e| AppError {
-        code: 701,
-        message: format!("Failed to open file for hash verification: {}", e),
+    let mut file = File::open(file_path).map_err(|e| {
+        AppError::FileRead(format!("Failed to open file for hash verification: {}", e))
     })?;
 
     let mut hasher = Sha256::new();
     let mut buffer = [0; 8192];
 
     loop {
-        let n = file.read(&mut buffer).map_err(|e| AppError {
-            code: 702,
-            message: format!("Failed to read file for hashing: {}", e),
-        })?;
+        let n = file
+            .read(&mut buffer)
+            .map_err(|e| AppError::FileRead(format!("Failed to read file for hashing: {}", e)))?;
         if n == 0 {
             break;
         }
@@ -32,7 +31,6 @@ pub fn verify_file_hash(file_path: &str, expected_hash: &str) -> Result<bool, Ap
 mod tests {
     use super::*;
     use std::fs;
-    use std::io::Write;
 
     #[test]
     fn test_verify_file_hash() {
@@ -43,7 +41,7 @@ mod tests {
         fs::write(test_file, test_content).unwrap();
 
         // SHA256 of "Hello, PixelForge!" is this:
-        let expected_hash = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918";
+        let expected_hash = "2731adc010348fead16f83b0550cd69789ae0821ac7519a09e78ff71eca6f579";
 
         let result = verify_file_hash(test_file, expected_hash);
         assert!(result.is_ok());
@@ -64,7 +62,7 @@ mod tests {
         let result = verify_file_hash("/nonexistent/file.txt", "abc123");
         assert!(result.is_err());
         if let Err(e) = result {
-            assert_eq!(e.code, 701);
+            assert!(matches!(e, AppError::FileRead(_)));
         }
     }
 }

@@ -26,7 +26,7 @@ pub struct BatchResult {
     pub errors: Vec<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct BatchProgressEvent {
     current: u32,
