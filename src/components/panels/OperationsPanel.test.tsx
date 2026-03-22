@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useAppStore } from "../../stores/useAppStore";
 import type { ImageInfo } from "../../types/image";
@@ -42,7 +42,6 @@ function resetStore() {
     currentFilePath: null,
     operationHistory: [],
     isProcessing: false,
-    operationProgress: null,
     activeSidebarPanel: null,
     beforeImageUrl: null,
     afterImageUrl: null,
@@ -56,30 +55,26 @@ function resetStore() {
   });
 }
 
-describe("OperationsPanel crop controls", () => {
+describe("OperationsPanel", () => {
   beforeEach(() => {
     resetStore();
     useAppStore.setState({ imageInfo: baseImageInfo });
     Object.values(opsMock).forEach((fn) => fn.mockReset());
   });
 
-  it("keeps crop dimensions inside the current image bounds", async () => {
+  it("triggers rotate actions from the quick controls", () => {
     render(<OperationsPanel />);
 
-    fireEvent.change(screen.getByLabelText("Crop X"), {
-      target: { value: "750" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: /^90$/ }));
 
-    await waitFor(() => {
-      expect(screen.getByLabelText("Crop Width")).toHaveValue(50);
-    });
+    expect(opsMock.rotate).toHaveBeenCalledWith(90);
+  });
 
-    expect(
-      screen.getByText("Keep the crop inside 800 x 600. Width max: 50, height max: 600."),
-    ).toBeInTheDocument();
+  it("uses the current image size for resize by default", () => {
+    render(<OperationsPanel />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Apply Crop" }));
+    fireEvent.click(screen.getByRole("button", { name: "Resize" }));
 
-    expect(opsMock.crop).toHaveBeenCalledWith(750, 0, 50, 600);
+    expect(opsMock.resize).toHaveBeenCalledWith(800, 600, "lanczos");
   });
 });

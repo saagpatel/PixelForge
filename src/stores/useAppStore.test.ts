@@ -1,7 +1,12 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@tauri-apps/api/core", () => ({
+  convertFileSrc: (path: string) => `mock://${path}`,
+}));
+
 import { useAppStore } from "./useAppStore";
 
-beforeEach(() => {
+function resetStore() {
   useAppStore.setState({
     imageUrl: null,
     imageInfo: null,
@@ -11,7 +16,6 @@ beforeEach(() => {
     currentFilePath: null,
     operationHistory: [],
     isProcessing: false,
-    operationProgress: null,
     activeSidebarPanel: null,
     beforeImageUrl: null,
     afterImageUrl: null,
@@ -23,26 +27,18 @@ beforeEach(() => {
     panY: 0,
     theme: "system",
   });
+}
+
+beforeEach(() => {
   globalThis.localStorage?.clear?.();
+  document.documentElement.className = "";
+  resetStore();
 });
 
 describe("useAppStore", () => {
-  it("clears processing progress when an error is set", () => {
-    useAppStore.setState({
-      isProcessing: true,
-      operationProgress: { stage: "preprocessing", percent: 25 },
-    });
-
-    useAppStore.getState().setError("Boom");
-
-    expect(useAppStore.getState().error).toBe("Boom");
-    expect(useAppStore.getState().isProcessing).toBe(false);
-    expect(useAppStore.getState().operationProgress).toBeNull();
-  });
-
   it("clears image-specific state when the image is cleared", () => {
     useAppStore.setState({
-      imageUrl: "asset://current.png",
+      imageUrl: "mock:///tmp/current.png",
       imageInfo: {
         width: 100,
         height: 80,
@@ -57,9 +53,8 @@ describe("useAppStore", () => {
       operationHistory: [
         { type: "resize", label: "Resize", imagePath: "/tmp/current.png" },
       ],
-      operationProgress: { stage: "complete", percent: 100 },
-      beforeImageUrl: "asset://before.png",
-      afterImageUrl: "asset://after.png",
+      beforeImageUrl: "mock:///tmp/before.png",
+      afterImageUrl: "mock:///tmp/after.png",
       showBeforeAfter: true,
       inpaintMode: true,
     });
@@ -71,8 +66,38 @@ describe("useAppStore", () => {
     expect(state.imageInfo).toBeNull();
     expect(state.currentFilePath).toBeNull();
     expect(state.operationHistory).toHaveLength(0);
-    expect(state.operationProgress).toBeNull();
     expect(state.showBeforeAfter).toBe(false);
     expect(state.inpaintMode).toBe(false);
+  });
+
+  it("toggles the active sidebar panel", () => {
+    const state = useAppStore.getState();
+
+    state.setSidebarPanel("operations");
+    expect(useAppStore.getState().activeSidebarPanel).toBe("operations");
+
+    useAppStore.getState().setSidebarPanel("operations");
+    expect(useAppStore.getState().activeSidebarPanel).toBeNull();
+  });
+
+  it("restores the previous image path when undo runs", () => {
+    const state = useAppStore.getState();
+
+    state.setFilePaths("/tmp/original.png", "/tmp/original.png");
+    state.pushOperation({
+      type: "resize",
+      label: "Resize",
+      imagePath: "/tmp/step-1.png",
+    });
+    state.pushOperation({
+      type: "rotate",
+      label: "Rotate",
+      imagePath: "/tmp/step-2.png",
+    });
+
+    useAppStore.getState().undo();
+
+    expect(useAppStore.getState().currentFilePath).toBe("/tmp/step-1.png");
+    expect(useAppStore.getState().imageUrl).toBe("mock:///tmp/step-1.png");
   });
 });
