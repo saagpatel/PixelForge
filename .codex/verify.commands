@@ -1,0 +1,9 @@
+# codex-os-managed
+pnpm typecheck
+pnpm test:frontend
+pnpm rust:check
+pnpm test:rust
+pnpm perf:build
+pnpm perf:bundle
+pnpm perf:assets
+pnpm perf:memory
