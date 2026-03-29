@@ -1,25 +1,33 @@
 # PixelForge
 
-Desktop image editor built with Tauri 2, React 19, TypeScript, and Rust.
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=flat-square&logo=typescript&logoColor=white)](#) [![Rust](https://img.shields.io/badge/Rust-dea584?style=flat-square&logo=rust&logoColor=white)](#) [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](#)
 
-## What It Does
+> A desktop image editor where the Rust backend does the heavy lifting and the AI tools actually work offline
 
-- Open and edit images locally
-- Apply core adjustments (rotate, flip, resize, brightness/contrast/HSL, blur, sharpen)
-- Run AI tools (background removal, upscaling, inpainting, style transfer, classification, palette extraction)
-- Export to multiple formats
+PixelForge is a local-first desktop image editor built with Tauri 2, React 19, and Rust. Core adjustments (rotate, flip, resize, brightness, contrast, HSL, blur, sharpen) run through a Rust image pipeline for speed. AI tools — background removal, upscaling, inpainting, style transfer, and palette extraction — run locally without cloud calls.
 
-## Requirements
+## Features
+
+- **Core adjustments** — rotate, flip, resize, brightness/contrast, HSL tuning, blur, and sharpen via a Rust-backed pipeline
+- **AI background removal** — segment and remove backgrounds locally; no API key, no upload
+- **AI upscaling** — super-resolution upscaling that preserves edge detail
+- **AI inpainting** — fill or replace selected regions with context-aware generation
+- **Style transfer and classification** — apply artistic styles and get scene labels from on-device models
+- **Palette extraction** — pull a dominant color palette from any image for design work
+- **Multi-format export** — save to PNG, JPEG, WebP, and other common formats
+
+## Quick Start
+
+### Prerequisites
 
 - Node.js 22+
 - pnpm 10+
-- Rust 1.93+
-- Platform prerequisites for Tauri:
-  - macOS: Xcode Command Line Tools
-  - Linux: [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)
-  - Windows: Visual Studio Build Tools
+- Rust 1.93+ (via [rustup](https://rustup.rs))
+- macOS: Xcode Command Line Tools
+- Linux: [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)
+- Windows: Visual Studio Build Tools
 
-## Setup
+### Installation
 
 ```bash
 git clone https://github.com/saagpatel/PixelForge.git
@@ -27,121 +35,44 @@ cd PixelForge
 bash .codex/setup.sh
 ```
 
-If you prefer the manual path:
+Or manually:
 
 ```bash
 pnpm install --frozen-lockfile
 ```
 
-## Run
+### Usage
 
 ```bash
+# Development mode
 pnpm tauri dev
-```
 
-### Lean Dev (low disk mode)
-
-```bash
+# Low-disk mode (ephemeral build caches)
 pnpm lean:dev
-```
 
-What lean mode does:
+# Run tests (Rust + frontend)
+pnpm test
 
-- Starts the app with the same `pnpm tauri dev` command path.
-- Uses ephemeral cache folders for Vite and Rust build outputs.
-- Cleans heavy repository build artifacts automatically when the dev process exits.
-
-Tradeoff:
-
-- Uses less persistent disk in the repo.
-- Startup is slower because Rust rebuilds more often after restarts.
-
-## Build
-
-```bash
+# Production build
 pnpm tauri build
 ```
 
-## Verify
+## Tech Stack
 
-Canonical verification runs through the checked-in Codex contract:
+| Layer | Technology |
+|-------|------------|
+| Desktop shell | Tauri 2 |
+| Frontend | React 19, TypeScript, Vite |
+| Styling | Tailwind CSS 4 |
+| State | Zustand 5 |
+| Image processing | Rust (image crate pipeline) |
+| AI models | On-device inference (local) |
+| Tests | Vitest + Rust unit tests |
 
-```bash
-pnpm verify
-```
+## Architecture
 
-This currently runs:
+Image data flows from the React canvas into the Rust backend via Tauri commands. Core transformations (resize, rotate, color adjustments) are pure Rust functions operating on raw pixel buffers — no round-trips through JavaScript. AI operations run as separate Rust tasks spawned with tokio, keeping the UI responsive during inference. The non-destructive edit history is maintained as a command stack in the frontend; Rust re-applies the full stack only when exporting.
 
-- TypeScript typecheck
-- Frontend unit tests
-- Rust compile check
-- Rust unit tests
-- Frontend production build timing + bundle capture
-- Asset size check
-- Memory smoke check
+## License
 
-For a desktop packaging smoke pass:
-
-```bash
-pnpm release:smoke
-```
-
-Codex worktree setup and action shortcuts live under `.codex/`:
-
-- `.codex/setup.sh`
-- `.codex/actions/verify.sh`
-- `.codex/actions/build-frontend.sh`
-- `.codex/actions/rust-tests.sh`
-- `.codex/actions/tauri-build.sh`
-- `.codex/actions/release-smoke.sh`
-
-CI uses the same shared entrypoints:
-
-- `bash .codex/setup.sh`
-- `bash .codex/actions/verify.sh`
-- `bash .codex/actions/release-smoke.sh`
-
-## Cleanup Commands
-
-Heavy build artifacts only:
-
-```bash
-pnpm clean:heavy
-```
-
-This removes:
-
-- `dist/`
-- `src-tauri/target/`
-- `node_modules/.vite/`
-
-Full reproducible local cleanup:
-
-```bash
-pnpm clean:full
-```
-
-This runs `clean:heavy`, then also removes:
-
-- `node_modules/`
-
-Disk usage report:
-
-```bash
-pnpm disk:usage
-```
-
-## Project Layout
-
-```text
-src/        React frontend
-src-tauri/  Rust + Tauri backend
-```
-
-## Notes
-
-- AI models are downloaded on first use and cached under `~/.pixelforge/models/`.
-- Cleanup scripts do not remove source files, `.git`, or user model data under `~/.pixelforge/models/`.
-- Pull requests are validated through the macOS-first `desktop-verify` workflow.
-- `release-smoke` produces an unsigned debug packaging check; production signing/notarization still requires Apple credentials.
-- The current release target is macOS-first.
+MIT
