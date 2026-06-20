@@ -47,9 +47,6 @@ pnpm install --frozen-lockfile
 # Development mode
 pnpm tauri dev
 
-# Low-disk mode (ephemeral build caches)
-pnpm lean:dev
-
 # Run tests (Rust + frontend)
 pnpm test
 
