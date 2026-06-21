@@ -1,6 +1,6 @@
 # PixelForge
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=flat-square&logo=typescript&logoColor=white)](#) [![Rust](https://img.shields.io/badge/Rust-dea584?style=flat-square&logo=rust&logoColor=white)](#) [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](#)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org) [![Rust](https://img.shields.io/badge/Rust-dea584?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org) [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE) [![Desktop Verify](https://github.com/saagpatel/PixelForge/actions/workflows/desktop-verify.yml/badge.svg)](https://github.com/saagpatel/PixelForge/actions/workflows/desktop-verify.yml)
 
 > A desktop image editor where the Rust backend does the heavy lifting and the AI tools actually work offline
 
@@ -47,9 +47,6 @@ pnpm install --frozen-lockfile
 # Development mode
 pnpm tauri dev
 
-# Low-disk mode (ephemeral build caches)
-pnpm lean:dev
-
 # Run tests (Rust + frontend)
 pnpm test
 
@@ -72,6 +69,10 @@ pnpm tauri build
 ## Architecture
 
 Image data flows from the React canvas into the Rust backend via Tauri commands. Core transformations (resize, rotate, color adjustments) are pure Rust functions operating on raw pixel buffers — no round-trips through JavaScript. AI operations run as separate Rust tasks spawned with tokio, keeping the UI responsive during inference. The non-destructive edit history is maintained as a command stack in the frontend; Rust re-applies the full stack only when exporting.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
