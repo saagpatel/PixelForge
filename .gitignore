@@ -6,3 +6,6 @@ target
 *.local
 .idea
 .vscode
+
+# Internal ops docs — not for public repo
+docs/PORTFOLIO-DISPOSITION.md
