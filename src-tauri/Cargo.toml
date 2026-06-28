@@ -1,8 +1,8 @@
 [package]
 name = "pixelforge"
 version = "0.1.0"
-description = "A modern image viewer and editor"
-authors = ["you"]
+description = "Local-first desktop image editor with on-device AI (background removal, upscaling, inpainting) — no cloud calls"
+authors = ["Saagar Patel"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
