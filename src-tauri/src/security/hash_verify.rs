@@ -23,7 +23,11 @@ pub fn verify_file_hash(file_path: &str, expected_hash: &str) -> Result<bool, Ap
         hasher.update(&buffer[..n]);
     }
 
-    let hash_result = format!("{:x}", hasher.finalize());
+    let hash_result: String = hasher
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
     Ok(hash_result == expected_hash)
 }
 
