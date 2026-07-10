@@ -170,8 +170,25 @@ pub async fn delete_model(app: AppHandle, model_id: String) -> Result<(), AppErr
 
 fn compute_sha256(path: &std::path::Path) -> Result<String, AppError> {
     use sha2::{Digest, Sha256};
+    use std::io::Read;
+
     let mut file = std::fs::File::open(path)?;
     let mut hasher = Sha256::new();
-    std::io::copy(&mut file, &mut hasher).map_err(|e| AppError::General(e.to_string()))?;
-    Ok(format!("{:x}", hasher.finalize()))
+    let mut buffer = [0; 8192];
+
+    loop {
+        let bytes_read = file
+            .read(&mut buffer)
+            .map_err(|e| AppError::General(e.to_string()))?;
+        if bytes_read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..bytes_read]);
+    }
+
+    Ok(hasher
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect())
 }
